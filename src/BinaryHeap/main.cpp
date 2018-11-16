@@ -1,9 +1,9 @@
 #include <iostream>
-#include "BinHeap.h"
+#include "BinaryHeap.h"
 #include <vector>
 int main() {
-  BinHeap<int> a;
-  std::vector<BinHeap<int>::Pointer> ptr;
+  BinaryHeap<int> a;
+  std::vector<BinaryHeap<int>::Pointer> ptr;
   int in;
   for (int i = 0; i < 10; ++i) {
     in = 10 + i;

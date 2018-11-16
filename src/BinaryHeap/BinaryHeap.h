@@ -2,18 +2,18 @@
 #include <memory>
 
 template<typename Key>
-class BinHeap {
+class BinaryHeap {
  public:
 
   class Pointer;
-  BinHeap();
-  ~BinHeap() = default;
+  BinaryHeap();
+  ~BinaryHeap() = default;
 
   bool isEmpty();
-  BinHeap<Key>::Pointer insert(Key value);
+  BinaryHeap<Key>::Pointer insert(Key value);
   Key getMin();
   Key extractMin();
-  Key erase(BinHeap<Key>::Pointer pointer);
+  Key erase(BinaryHeap<Key>::Pointer pointer);
  private:
 
   struct Node {
@@ -33,28 +33,28 @@ class BinHeap {
 };
 
 template<typename Key>
-class BinHeap<Key>::Pointer {
+class BinaryHeap<Key>::Pointer {
  public:
   Pointer() {}
   ~Pointer() {}
 
  private:
-  friend class BinHeap<Key>;
-  std::shared_ptr<std::shared_ptr<BinHeap<Key>::Node>> ptr;
+  friend class BinaryHeap<Key>;
+  std::shared_ptr<std::shared_ptr<BinaryHeap<Key>::Node>> ptr;
 };
 
 template<typename Key>
-BinHeap<Key>::BinHeap() {
+BinaryHeap<Key>::BinaryHeap() {
   size_ = 0;
 }
 
 template<typename Key>
-bool BinHeap<Key>::isEmpty() {
+bool BinaryHeap<Key>::isEmpty() {
   return size_ == 0;
 }
 
 template<typename Key>
-void BinHeap<Key>::siftUp_(BinHeap<Key>::Node node) {
+void BinaryHeap<Key>::siftUp_(BinaryHeap<Key>::Node node) {
   int index = node.index, parent_index = 0;
   Key node_value = node.value;
   while (index > 0) {
@@ -69,7 +69,7 @@ void BinHeap<Key>::siftUp_(BinHeap<Key>::Node node) {
 }
 
 template<typename Key>
-void BinHeap<Key>::swap_(BinHeap<Key>::Node& first, BinHeap<Key>::Node& second) {
+void BinaryHeap<Key>::swap_(BinaryHeap<Key>::Node& first, BinaryHeap<Key>::Node& second) {
   std::swap(first, second);
   std::swap(first.ptr_to_ptr, second.ptr_to_ptr);
   std::swap(first.value, second.value);
@@ -78,10 +78,10 @@ void BinHeap<Key>::swap_(BinHeap<Key>::Node& first, BinHeap<Key>::Node& second) 
 }
 
 template<typename Key>
-typename BinHeap<Key>::Pointer BinHeap<Key>::insert(Key value) {
+typename BinaryHeap<Key>::Pointer BinaryHeap<Key>::insert(Key value) {
   Node new_node;
-  auto inner_ptr_to_node = std::make_shared<BinHeap<Key>::Node>(new_node);
-  auto inner_ptr_to_ptr = std::make_shared<std::shared_ptr<BinHeap<Key>::Node>>(inner_ptr_to_node);
+  auto inner_ptr_to_node = std::make_shared<BinaryHeap<Key>::Node>(new_node);
+  auto inner_ptr_to_ptr = std::make_shared<std::shared_ptr<BinaryHeap<Key>::Node>>(inner_ptr_to_node);
   heap_.push_back(inner_ptr_to_node);
   inner_ptr_to_node->index = static_cast<int>(size_);
   ++size_;
@@ -95,7 +95,7 @@ typename BinHeap<Key>::Pointer BinHeap<Key>::insert(Key value) {
 }
 
 template<typename Key>
-Key BinHeap<Key>::erase_(Node node) {
+Key BinaryHeap<Key>::erase_(Node node) {
   int index = node.index;
   swap_(*(node.ptr), *((heap_.back())->ptr));
   Key return_val = heap_.back()->value;
@@ -106,7 +106,7 @@ Key BinHeap<Key>::erase_(Node node) {
 }
 
 template<typename Key>
-void BinHeap<Key>::siftDown_(Node node) {
+void BinaryHeap<Key>::siftDown_(Node node) {
   int index = node.index, min_child_index = 0;
   while (2 * index + 1 < size_) {
     min_child_index = 2 * index + 1;
@@ -122,16 +122,16 @@ void BinHeap<Key>::siftDown_(Node node) {
 }
 
 template<typename Key>
-Key BinHeap<Key>::getMin() {
+Key BinaryHeap<Key>::getMin() {
   return heap_.front()->value;
 }
 
 template<typename Key>
-Key BinHeap<Key>::extractMin() {
+Key BinaryHeap<Key>::extractMin() {
   return erase_(*(heap_.front()->ptr));
 }
 
 template<typename Key>
-Key BinHeap<Key>::erase(BinHeap<Key>::Pointer pointer) {
+Key BinaryHeap<Key>::erase(BinaryHeap<Key>::Pointer pointer) {
   return erase_(*(*(pointer.ptr))->ptr);
 }
