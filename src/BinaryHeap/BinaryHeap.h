@@ -18,6 +18,8 @@ class BinaryHeap {
   Key extractMin();
   Key erase(BinaryHeap<Key>::Pointer pointer);
   void change(Pointer pointer, Key value);
+  size_t size();
+  void clear();
  private:
 
   struct Node {
@@ -172,4 +174,15 @@ void BinaryHeap<Key>::change(BinaryHeap<Key>::Pointer pointer, Key value) {
   }
   ptr_to_node->value = value;
   siftUp_(*ptr_to_node);
+}
+
+template<typename Key>
+size_t BinaryHeap<Key>::size() {
+  return size_;
+}
+
+template<typename Key>
+void BinaryHeap<Key>::clear() {
+  size_ = 0;
+  heap_.clear();
 }

@@ -3,71 +3,83 @@
 
 #include "../src/BinaryHeap/BinaryHeap.h"
 #include <gtest/gtest.h>
+#include <random>
+#include <algorithm>
 
-//TEST(LinkedListContructor, EmptySize) {
-//  LinkedList<int> list = LinkedList<int> ();
-//  EXPECT_EQ(list.size(), 0);
-//}
-//
-//TEST(LinkedListContructor, VectorConstructor) {
-//  std::vector<int> nums = {1, 2, 3};
-//  LinkedList<int> list = LinkedList<int>(nums);
-//
-//  EXPECT_EQ(list.size(), nums.size());
-//  EXPECT_EQ(list.NthElement(0), 1);
-//  EXPECT_EQ(list.NthElement(1), 2);
-//  EXPECT_EQ(list.NthElement(2), 3);
-//}
-//
-//TEST(LinkedListBasic, PushBack) {
-//  LinkedList<int> list = LinkedList<int>();
-//  list.PushBack(1);
-//  list.PushBack(2);
-//  list.PushBack(3);
-//
-//  EXPECT_EQ(list.size(), 3);
-//
-//  EXPECT_EQ(list.NthElement(0), 1);
-//  EXPECT_EQ(list.NthElement(1), 2);
-//  EXPECT_EQ(list.NthElement(2), 3);
-//}
-//
-//TEST(LinkedListBasic, PushFront) {
-//  LinkedList<int> list = LinkedList<int>();
-//  list.PushFront(1);
-//  list.PushFront(2);
-//  list.PushFront(3);
-//
-//  EXPECT_EQ(list.size(), 3);
-//
-//  EXPECT_EQ(list.NthElement(0), 3);
-//  EXPECT_EQ(list.NthElement(1), 2);
-//  EXPECT_EQ(list.NthElement(2), 1);
-//}
-//
-//TEST(LinkedListReverse, Recursive) {
-//  std::vector<int> nums = {1, 2, 3, 4, 5};
-//  LinkedList<int> list = LinkedList<int>(nums);
-//
-//  list.ReverseRecursive();
-//  std::reverse(nums.begin(), nums.end());
-//
-//  for (int i = 0; i < list.size(); ++i) {
-//    EXPECT_EQ(list.NthElement(i), nums[i]);
-//  }
-//}
-//
-//TEST(LinkedListReverse, DivideAndConquer) {
-//  std::vector<int> nums = {1, 2, 3, 4, 5};
-//  LinkedList<int> list = LinkedList<int>(nums);
-//
-//  list.ReverseDivideAndConquer();
-//  std::reverse(nums.begin(), nums.end());
-//
-//  for (int i = 0; i < list.size(); ++i) {
-//    EXPECT_EQ(list.NthElement(i), nums[i]);
-//  }
-//}
-TEST(BinaryHeapConstructor,Empty) {
+TEST(BinaryHeapConstructor, EmptySize) {
+  BinaryHeap<int> heap;
+  EXPECT_EQ(heap.size(), 0);
+}
+TEST(BinaryHeapConstructor, N_Elements) {
+  BinaryHeap<int> heap;
+  for (int n = 0; n < 1000; ++n) {
+    for (int i = 0; i < n; ++i) {
+      heap.insert(0);
+    }
+    EXPECT_EQ(heap.size(), n);
+    heap.clear();
+  }
+}
+TEST(BinaryHeapBasic, Clear) {
+  BinaryHeap<int> heap;
+  for (int n = 0; n < 1000; ++n) {
+    for (int i = 0; i < n; ++i) {
+      heap.insert(0);
+    }
+    heap.clear();
+    EXPECT_EQ(heap.size(), 0);
+    EXPECT_EQ(heap.isEmpty(), true);
+  }
+}
 
+TEST(BinaryHeapBasic, GetMin) {
+  BinaryHeap<unsigned long long> heap;
+  std::mt19937_64 gen;
+  unsigned long long input = 0, minElement = 18446744073709551615;
+  for (int i = 0; i < 100000; ++i) {
+    input = gen();
+    heap.insert(input);
+    minElement = std::min(minElement, input);
+  }
+  EXPECT_EQ(heap.getMin(), minElement);
+}
+
+TEST(BinaryHeapBasic, ExtractMin) {
+  BinaryHeap<unsigned long long> heap;
+  std::vector<unsigned long long> sorted, check;
+  std::mt19937_64 gen;
+  unsigned long long input = 0;
+  for (int count = 0; count < 100; ++count) {
+    for (int n = 1; n < 100; ++n) {
+      for (int i = 0; i < n; ++i) {
+        input = gen();
+        sorted.push_back(input);
+        heap.insert(input);
+      }
+      std::sort(sorted.begin(), sorted.end());
+      for (int i = 0; i < n; ++i) {
+        check.push_back(heap.extractMin());
+      }
+      EXPECT_EQ(sorted, check);
+      sorted.clear();
+      check.clear();
+      heap.clear();
+    }
+  }
+}
+
+TEST(BinaryHeapBasic, EraseAll) {
+  BinaryHeap<unsigned long long> heap;
+  std::vector<BinaryHeap<unsigned long long>::Pointer> ptr;
+  std::mt19937_64 gen;
+  unsigned long long input = 0;
+  for (int i = 0; i < 100000; ++i) {
+    input = gen();
+    ptr.push_back(heap.insert(input));
+  }
+  for (int i = 0; i < 100000; ++i) {
+    heap.erase(ptr[i]);
+    EXPECT_EQ(heap.size(), 99999 - i);
+  }
+  EXPECT_EQ(heap.isEmpty(), true);
 }
