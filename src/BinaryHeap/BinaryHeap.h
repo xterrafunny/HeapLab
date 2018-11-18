@@ -1,5 +1,6 @@
 #include <vector>
 #include <memory>
+#include <iostream>
 
 template<typename Key>
 class BinaryHeap {
@@ -7,6 +8,8 @@ class BinaryHeap {
 
   class Pointer;
   BinaryHeap();
+  template<class Iterator>
+  BinaryHeap(Iterator begin, Iterator end);
   ~BinaryHeap() = default;
 
   bool isEmpty();
@@ -14,6 +17,7 @@ class BinaryHeap {
   Key getMin();
   Key extractMin();
   Key erase(BinaryHeap<Key>::Pointer pointer);
+  void change(Pointer pointer, Key value);
  private:
 
   struct Node {
@@ -30,6 +34,7 @@ class BinaryHeap {
   void siftUp_(Node node);
   Key erase_(Node node);
   void swap_(Node& first, Node& second);
+  std::shared_ptr<Node> newNode_(Key value);
 };
 
 template<typename Key>
@@ -78,7 +83,7 @@ void BinaryHeap<Key>::swap_(BinaryHeap<Key>::Node& first, BinaryHeap<Key>::Node&
 }
 
 template<typename Key>
-typename BinaryHeap<Key>::Pointer BinaryHeap<Key>::insert(Key value) {
+std::shared_ptr<typename BinaryHeap<Key>::Node> BinaryHeap<Key>::newNode_(Key value) {
   Node new_node;
   auto inner_ptr_to_node = std::make_shared<BinaryHeap<Key>::Node>(new_node);
   auto inner_ptr_to_ptr = std::make_shared<std::shared_ptr<BinaryHeap<Key>::Node>>(inner_ptr_to_node);
@@ -88,9 +93,15 @@ typename BinaryHeap<Key>::Pointer BinaryHeap<Key>::insert(Key value) {
   inner_ptr_to_node->value = value;
   inner_ptr_to_node->ptr = inner_ptr_to_node;
   inner_ptr_to_node->ptr_to_ptr = inner_ptr_to_ptr;
-  siftUp_(*inner_ptr_to_node);
+  return inner_ptr_to_node;
+}
+
+template<typename Key>
+typename BinaryHeap<Key>::Pointer BinaryHeap<Key>::insert(Key value) {
+  std::shared_ptr<Node> new_node = newNode_(value);
+  siftUp_(*new_node);
   Pointer return_ptr;
-  return_ptr.ptr = inner_ptr_to_ptr;
+  return_ptr.ptr = std::make_shared<std::shared_ptr<Node>>(new_node->ptr);
   return return_ptr;
 }
 
@@ -134,4 +145,31 @@ Key BinaryHeap<Key>::extractMin() {
 template<typename Key>
 Key BinaryHeap<Key>::erase(BinaryHeap<Key>::Pointer pointer) {
   return erase_(*(*(pointer.ptr))->ptr);
+}
+
+template<typename Key>
+template<class Iterator>
+BinaryHeap<Key>::BinaryHeap(Iterator begin, Iterator end) {
+  size_ = 0;
+  for (Iterator i = begin; i != end; ++i) {
+    newNode_(*i);
+  }
+  for (int i = (static_cast<int>(size_) + 1) / 2; i >= 0; i--) {
+    siftDown_(*(heap_[i]->ptr));
+  }
+}
+
+template<typename Key>
+void BinaryHeap<Key>::change(BinaryHeap<Key>::Pointer pointer, Key value) {
+  std::shared_ptr<Node> ptr_to_node = *pointer.ptr;
+  if (ptr_to_node->value == value) {
+    return;
+  }
+  if (ptr_to_node->value < value) {
+    ptr_to_node->value = value;
+    siftDown_(*ptr_to_node);
+    return;
+  }
+  ptr_to_node->value = value;
+  siftUp_(*ptr_to_node);
 }
