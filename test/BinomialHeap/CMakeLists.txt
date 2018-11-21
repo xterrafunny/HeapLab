@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 3.12)
 add_executable(
         unit_tests
         test.cpp
-        main.cpp)
-
+        main.cpp
+)
 target_link_libraries(
         unit_tests
         gtest_main
-        BinaryHeap
+        BinomialHeap
 )
 
 add_test(
