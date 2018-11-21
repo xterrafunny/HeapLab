@@ -16,7 +16,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
 endif()
 
 add_subdirectory(src/BinaryHeap)
-add_subdirectory(test)
+add_subdirectory(test/BinaryHeap)
 
 include(cmake/googletest.cmake)
 fetch_googletest(

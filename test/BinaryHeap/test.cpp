@@ -1,7 +1,7 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_MODULE testBinaryHeap
 
-#include "../src/BinaryHeap/BinaryHeap.h"
+#include "BinaryHeap.h"
 #include <gtest/gtest.h>
 #include <random>
 #include <algorithm>
