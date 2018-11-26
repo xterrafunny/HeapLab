@@ -2,5 +2,9 @@
 #include <iostream>
 using namespace std;
 int main() {
-  cout << "test";
+  BinomialHeap<int> heap;
+  for (int i = 0; i < 10; ++i) {
+    heap.insert(10 + i);
+  }
+  cout << "fine";
 }
