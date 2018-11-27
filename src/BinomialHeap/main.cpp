@@ -6,5 +6,9 @@ int main() {
   for (int i = 0; i < 10; ++i) {
     heap.insert(10 + i);
   }
-  cout << "fine";
+
+  for (int i = 0; i < 10; ++i) {
+    cout << heap.extractMin() << ' ';
+  }
+  cout << "\nfine";
 }

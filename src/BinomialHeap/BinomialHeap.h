@@ -10,6 +10,8 @@ class BinomialHeap {
   size_t size();
   Key getMin();
   void insert(Key key);
+  Key extractMin();
+  class Pointer;
  private:
   struct Node {
     std::list<std::shared_ptr<Node>> children;
@@ -19,16 +21,27 @@ class BinomialHeap {
     std::shared_ptr<Node> ptr_to_node;
     std::weak_ptr<std::shared_ptr<Node>> ptr_to_ptr;
   };
-  std::shared_ptr<Node> ptr_to_min_;
+  typename std::list<std::shared_ptr<Node>>::iterator iterator_to_min_;
   std::list<std::shared_ptr<Node>> roots_;
   size_t size_;
   void merge_(BinomialHeap<Key> &heap);
   void nodeMerge_(std::shared_ptr<Node> &first,std::shared_ptr<Node> &second);
+  void swap_(Node& first, Node& second);
+};
+
+template<typename Key>
+class BinomialHeap<Key>::Pointer {
+ public:
+  Pointer() {};
+  ~Pointer() {};
+ private:
+  friend class BinomialHeap;
+
 };
 
 template<typename Key>
 BinomialHeap<Key>::BinomialHeap() {
-  ptr_to_min_ = nullptr;
+  size_ = 0;
 }
 
 template<typename Key>
@@ -43,7 +56,7 @@ size_t BinomialHeap<Key>::size() {
 
 template<typename Key>
 Key BinomialHeap<Key>::getMin() {
-  return ptr_to_min_->key;
+  return (*iterator_to_min_)->key;
 }
 
 template<typename Key>
@@ -85,18 +98,21 @@ void BinomialHeap<Key>::merge_(BinomialHeap<Key> &heap) {
       new_roots.push_back(add_node);
     }
   }
-  if (size_ == 0) {
-    ptr_to_min_ = heap.ptr_to_min_;
-  }
-  else if (!heap.isEmpty()) {
-    ptr_to_min_ = (ptr_to_min_->key < (heap.ptr_to_min_)->key) ? ptr_to_min_ : heap.ptr_to_min_;
-  }
   size_ += heap.size_;
   heap.size_ = 0;
   heap.roots_.clear();
-  heap.ptr_to_min_ = nullptr;
   roots_ = new_roots;
-
+  if (size_ == 0) {
+    return;
+  }
+  iterator_to_min_ = roots_.begin();
+  Key new_min = roots_.front()->key;
+  for (auto i = roots_.begin(); i != roots_.end(); ++i) {
+    if ((*i)->key < new_min) {
+      new_min = (*i)->key;
+      iterator_to_min_ = i;
+    }
+  }
 }
 
 template<typename Key>
@@ -118,9 +134,30 @@ void BinomialHeap<Key>::insert(Key key) {
   inner_ptr_to_node->degree = 0;
   inner_ptr_to_node->key = key;
   inner_ptr_to_node->parent.reset();
+
   BinomialHeap<Key> new_heap;
   new_heap.roots_.push_back(inner_ptr_to_node);
-  new_heap.ptr_to_min_ = inner_ptr_to_node;
   new_heap.size_ = 1;
+
   merge_(new_heap);
+}
+
+template<typename Key>
+Key BinomialHeap<Key>::extractMin() {
+  BinomialHeap<Key> new_heap;
+  Key return_value = getMin();
+  new_heap.roots_ = (*iterator_to_min_)->children;
+  for (auto i = new_heap.roots_.begin(); i != new_heap.roots_.end(); ++i) {
+    (*i)->parent.reset();
+  }
+  new_heap.size_ = static_cast<size_t>(std::max((1 << ((*iterator_to_min_)->degree)) - 1, 0));
+  size_ -= 1 + new_heap.size();
+  roots_.erase(iterator_to_min_);
+  merge_(new_heap);
+  return return_value;
+}
+
+template<typename Key>
+void BinomialHeap<Key>::swap_(BinomialHeap<Key>::Node &first, BinomialHeap<Key>::Node &second) {
+
 }
