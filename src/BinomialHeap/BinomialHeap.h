@@ -5,17 +5,17 @@ template<typename Key>
 class BinomialHeap {
  public:
   BinomialHeap();
-  ~BinomialHeap() = default;
+  ~BinomialHeap();
   bool isEmpty();
   size_t size();
   Key getMin();
   void insert(Key key);
   Key extractMin();
-  class Pointer;
+  void clear();
  private:
   struct Node {
     std::list<std::shared_ptr<Node>> children;
-    std::weak_ptr<Node> parent;
+    std::shared_ptr<Node> parent;
     Key key;
     int degree;
     std::shared_ptr<Node> ptr_to_node;
@@ -24,19 +24,9 @@ class BinomialHeap {
   typename std::list<std::shared_ptr<Node>>::iterator iterator_to_min_;
   std::list<std::shared_ptr<Node>> roots_;
   size_t size_;
+  void clearNode(std::shared_ptr<Node> node);
   void merge_(BinomialHeap<Key> &heap);
   void nodeMerge_(std::shared_ptr<Node> &first,std::shared_ptr<Node> &second);
-  void swap_(Node& first, Node& second);
-};
-
-template<typename Key>
-class BinomialHeap<Key>::Pointer {
- public:
-  Pointer() {};
-  ~Pointer() {};
- private:
-  friend class BinomialHeap;
-
 };
 
 template<typename Key>
@@ -134,7 +124,6 @@ void BinomialHeap<Key>::insert(Key key) {
   inner_ptr_to_node->degree = 0;
   inner_ptr_to_node->key = key;
   inner_ptr_to_node->parent.reset();
-
   BinomialHeap<Key> new_heap;
   new_heap.roots_.push_back(inner_ptr_to_node);
   new_heap.size_ = 1;
@@ -147,6 +136,8 @@ Key BinomialHeap<Key>::extractMin() {
   BinomialHeap<Key> new_heap;
   Key return_value = getMin();
   new_heap.roots_ = (*iterator_to_min_)->children;
+  (*iterator_to_min_)->ptr_to_ptr.reset();
+  (*iterator_to_min_)->ptr_to_node.reset();
   for (auto i = new_heap.roots_.begin(); i != new_heap.roots_.end(); ++i) {
     (*i)->parent.reset();
   }
@@ -158,6 +149,24 @@ Key BinomialHeap<Key>::extractMin() {
 }
 
 template<typename Key>
-void BinomialHeap<Key>::swap_(BinomialHeap<Key>::Node &first, BinomialHeap<Key>::Node &second) {
+BinomialHeap<Key>::~BinomialHeap() {
+  clear();
+}
 
+template<typename Key>
+void BinomialHeap<Key>::clearNode(std::shared_ptr<BinomialHeap<Key>::Node> node) {
+  node->parent.reset();
+  node->ptr_to_ptr.reset();
+  for (auto i = node->children.begin(); i != node->children.end(); ++i) {
+    clearNode(*i);
+  }
+  node->ptr_to_node.reset();
+}
+
+template<typename Key>
+void BinomialHeap<Key>::clear() {
+  for (auto i = roots_.begin(); i != roots_.end(); ++i) {
+    clearNode(*i);
+  }
+  size_ = 0;
 }
