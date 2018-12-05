@@ -12,7 +12,7 @@ TEST(BinaryHeapConstructor, EmptySize) {
 }
 TEST(BinaryHeapConstructor, N_Elements) {
   BinaryHeap<int> heap;
-  for (int n = 0; n < 1000; ++n) {
+  for (int n = 0; n < 100; ++n) {
     for (int i = 0; i < n; ++i) {
       heap.insert(0);
     }
@@ -22,7 +22,7 @@ TEST(BinaryHeapConstructor, N_Elements) {
 }
 TEST(BinaryHeapBasic, Clear) {
   BinaryHeap<int> heap;
-  for (int n = 0; n < 1000; ++n) {
+  for (int n = 0; n < 100; ++n) {
     for (int i = 0; i < n; ++i) {
       heap.insert(0);
     }
@@ -36,7 +36,7 @@ TEST(BinaryHeapBasic, GetMin) {
   BinaryHeap<unsigned long long> heap;
   std::mt19937_64 gen;
   unsigned long long input = 0, minElement = 18446744073709551615;
-  for (int i = 0; i < 100000; ++i) {
+  for (int i = 0; i < 10000; ++i) {
     input = gen();
     heap.insert(input);
     minElement = std::min(minElement, input);
@@ -49,7 +49,7 @@ TEST(BinaryHeapBasic, ExtractMin) {
   std::vector<unsigned long long> sorted, check;
   std::mt19937_64 gen;
   unsigned long long input = 0;
-  for (int count = 0; count < 100; ++count) {
+  for (int count = 0; count < 3; ++count) {
     for (int n = 1; n < 100; ++n) {
       for (int i = 0; i < n; ++i) {
         input = gen();

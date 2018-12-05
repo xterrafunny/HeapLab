@@ -10,7 +10,7 @@ class BinaryHeap {
   BinaryHeap();
   template<class Iterator>
   BinaryHeap(Iterator begin, Iterator end);
-  ~BinaryHeap() = default;
+  ~BinaryHeap();
 
   bool isEmpty();
   BinaryHeap<Key>::Pointer insert(Key value);
@@ -24,9 +24,9 @@ class BinaryHeap {
 
   struct Node {
     int index;
-    std::shared_ptr<Node> ptr;
+    std::weak_ptr<Node> ptr;
     Key value;
-    std::weak_ptr<std::shared_ptr<Node>> ptr_to_ptr;
+    std::shared_ptr<std::weak_ptr<Node>> ptr_to_ptr;
   };
 
   size_t size_;
@@ -47,7 +47,7 @@ class BinaryHeap<Key>::Pointer {
 
  private:
   friend class BinaryHeap<Key>;
-  std::shared_ptr<std::shared_ptr<BinaryHeap<Key>::Node>> ptr;
+  std::shared_ptr<std::weak_ptr<BinaryHeap<Key>::Node>> ptr;
 };
 
 template<typename Key>
@@ -69,7 +69,7 @@ void BinaryHeap<Key>::siftUp_(BinaryHeap<Key>::Node node) {
     if ((heap_[parent_index])->value < node_value) {
       return;
     }
-    swap_(*(heap_[index]->ptr), *(heap_[parent_index]->ptr));
+    swap_(*(heap_[index]->ptr.lock()), *(heap_[parent_index]->ptr.lock()));
     index = parent_index;
   }
   return;
@@ -94,7 +94,7 @@ std::shared_ptr<typename BinaryHeap<Key>::Node> BinaryHeap<Key>::newNode_(Key va
   ++size_;
   inner_ptr_to_node->value = value;
   inner_ptr_to_node->ptr = inner_ptr_to_node;
-  inner_ptr_to_node->ptr_to_ptr = inner_ptr_to_ptr;
+  inner_ptr_to_node->ptr_to_ptr = std::make_shared<std::weak_ptr<Node>>(inner_ptr_to_node);
   return inner_ptr_to_node;
 }
 
@@ -103,18 +103,23 @@ typename BinaryHeap<Key>::Pointer BinaryHeap<Key>::insert(Key value) {
   std::shared_ptr<Node> new_node = newNode_(value);
   siftUp_(*new_node);
   Pointer return_ptr;
-  return_ptr.ptr = std::make_shared<std::shared_ptr<Node>>(new_node->ptr);
+  return_ptr.ptr = std::make_shared<std::weak_ptr<Node>>(new_node->ptr);
   return return_ptr;
 }
 
 template<typename Key>
 Key BinaryHeap<Key>::erase_(Node node) {
   int index = node.index;
-  swap_(*(node.ptr), *((heap_.back())->ptr));
+  swap_(*(node.ptr.lock()), *((heap_.back())->ptr.lock()));
   Key return_val = heap_.back()->value;
+  node = *(heap_.back());
+  node.ptr_to_ptr.reset();
+  node.ptr.reset();
   heap_.pop_back();
   size_--;
-  siftDown_(*(heap_[index]->ptr));
+  if (index < size_) {
+    siftDown_(*(heap_[index]->ptr.lock()));
+  }
   return return_val;
 }
 
@@ -129,7 +134,7 @@ void BinaryHeap<Key>::siftDown_(Node node) {
     if (heap_[min_child_index]->value > node.value) {
       return;
     }
-    swap_(*(node.ptr), *(heap_[min_child_index]->ptr));
+    swap_(*(node.ptr.lock()), *(heap_[min_child_index]->ptr.lock()));
     index = min_child_index;
   }
 }
@@ -141,12 +146,13 @@ Key BinaryHeap<Key>::getMin() {
 
 template<typename Key>
 Key BinaryHeap<Key>::extractMin() {
-  return erase_(*(heap_.front()->ptr));
+  return erase_(*((heap_.front())->ptr.lock()));
 }
 
 template<typename Key>
 Key BinaryHeap<Key>::erase(BinaryHeap<Key>::Pointer pointer) {
-  return erase_(*(*(pointer.ptr))->ptr);
+  Node node = *((*pointer.ptr).lock());
+  return erase_(node);
 }
 
 template<typename Key>
@@ -163,7 +169,7 @@ BinaryHeap<Key>::BinaryHeap(Iterator begin, Iterator end) {
 
 template<typename Key>
 void BinaryHeap<Key>::change(BinaryHeap<Key>::Pointer pointer, Key value) {
-  std::shared_ptr<Node> ptr_to_node = *pointer.ptr;
+  std::shared_ptr<Node> ptr_to_node = (*pointer.ptr).lock();
   if (ptr_to_node->value == value) {
     return;
   }
@@ -183,6 +189,15 @@ size_t BinaryHeap<Key>::size() {
 
 template<typename Key>
 void BinaryHeap<Key>::clear() {
+  for (auto i = heap_.begin(); i != heap_.end(); ++i) {
+    (*i)->ptr_to_ptr.reset();
+    (*i)->ptr.reset();
+  }
   size_ = 0;
   heap_.clear();
+}
+
+template<typename Key>
+BinaryHeap<Key>::~BinaryHeap() {
+  clear();
 }
