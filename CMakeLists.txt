@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(Lab1)
+project(HeapLab)
 
 set(CMAKE_CXX_STANDARD 17)
-add_executable(Lab1 src/BinaryHeap/main.cpp)
+add_executable(Lab1 src/FibHeap/main.cpp)
 
 include(GNUInstallDirs)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
@@ -15,14 +15,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
 
-add_subdirectory(src/BinaryHeap)
-add_subdirectory(test/BinaryHeap)
+add_subdirectory(src/FibHeap)
+add_subdirectory(test/FibHeap)
 
 include(cmake/googletest.cmake)
+
 fetch_googletest(
         ${PROJECT_SOURCE_DIR}/cmake
         ${PROJECT_BINARY_DIR}/googletest
 )
 
 enable_testing()
-
