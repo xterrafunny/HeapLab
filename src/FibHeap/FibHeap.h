@@ -149,13 +149,18 @@ void FibHeap<Key>::merge(FibHeap<Key> &otherHeap) {
 template<typename Key>
 void FibHeap<Key>::decrease(FibHeap::Pointer ptr, Key key) {
   std::shared_ptr<Node> node = ptr.ptr.lock();
-  if (node->parent.expired() || node->parent.lock()->key < key) {
+  if (node->parent.expired()) {
     node->key = key;
-    return;
+    if (min_ptr_->key >= key) {
+      min_ptr_ = node;
+    }
+  } else if (node->parent.lock()->key < key) {
+    node->key = key;
+  } else {
+    node->key = key;
+    cut(node);
+    cascadingCut(node->parent.lock());
   }
-  node->key = key;
-  cut(node);
-  cascadingCut(node->parent.lock());
 }
 
 template<typename Key>

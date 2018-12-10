@@ -8,7 +8,7 @@ int main() {
   for (int i = 0; i < 10; ++i) {
     ptr[i] = heap.insert(10 + i);
   }
-  heap.erase(ptr[7]);
+  heap.decrease(ptr[4], 7);
   for (int i = 0; i < 9; ++i) {
     cout << heap.extractMin() << ' ';
   }
