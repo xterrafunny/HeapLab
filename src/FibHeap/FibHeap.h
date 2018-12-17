@@ -1,3 +1,4 @@
+#include <exception>
 #include <vector>
 #include <utility>
 #include <memory>
@@ -16,7 +17,6 @@ class FibHeap {
   void decrease(Pointer ptr, Key key);
   size_t size();
   Key erase(Pointer ptr);
-  void consolidate();
   void clear();
  private:
   size_t size_;
@@ -33,6 +33,7 @@ class FibHeap {
   std::shared_ptr<Node> min_ptr_;
   void cut(std::shared_ptr<Node>& node);
   void cascadingCut(std::shared_ptr<Node> node);
+  void consolidate();
 };
 
 template<typename Key>
@@ -87,11 +88,17 @@ typename FibHeap<Key>::Pointer FibHeap<Key>::insert(Key key) {
 
 template<typename Key>
 Key FibHeap<Key>::getMin() {
+  if (min_ptr_ == nullptr) {
+    throw std::out_of_range("Empty heap");
+  }
   return min_ptr_->key;
 }
 
 template<typename Key>
 Key FibHeap<Key>::extractMin() {
+  if (min_ptr_ == nullptr) {
+    throw std::out_of_range("Empty heap");
+  }
   Key return_value = getMin();
   if (size_ == 1) {
     size_ = 0;
@@ -148,7 +155,13 @@ void FibHeap<Key>::merge(FibHeap<Key> &otherHeap) {
 
 template<typename Key>
 void FibHeap<Key>::decrease(FibHeap::Pointer ptr, Key key) {
+  if (ptr.ptr.expired()) {
+    throw std::invalid_argument("Key is already deleted");
+  }
   std::shared_ptr<Node> node = ptr.ptr.lock();
+  if (node->key < key) {
+    throw std::invalid_argument("New key is more than old key");
+  }
   if (node->parent.expired()) {
     node->key = key;
     if (min_ptr_->key >= key) {
@@ -158,8 +171,9 @@ void FibHeap<Key>::decrease(FibHeap::Pointer ptr, Key key) {
     node->key = key;
   } else {
     node->key = key;
+    std::shared_ptr<Node> parent = node->parent.lock();
     cut(node);
-    cascadingCut(node->parent.lock());
+    cascadingCut(parent);
   }
 }
 
@@ -229,11 +243,13 @@ void FibHeap<Key>::consolidate() {
 
 template<typename Key>
 void FibHeap<Key>::cascadingCut(std::shared_ptr<FibHeap::Node> node) {
-  while (node != nullptr && node->mark) {
+  while (node != nullptr && !node->parent.expired() && node->mark) {
     cut(node);
     node = node->parent.lock();
   }
-  node->mark = true;
+  if (node != nullptr) {
+    node->mark = true;
+  }
 }
 
 template<typename Key>
@@ -262,13 +278,19 @@ void FibHeap<Key>::cut(std::shared_ptr<FibHeap::Node> &node) {
 
 template<typename Key>
 Key FibHeap<Key>::erase(FibHeap<Key>::Pointer ptr) {
+  if (ptr.ptr.expired()) {
+    throw std::invalid_argument("Key is already deleted");
+  }
   decrease(ptr, min_ptr_->key);
   return extractMin();
 }
 
 template<typename Key>
 void FibHeap<Key>::clear() {
-  while (!isEmpty()) {
-    extractMin();
+  if (min_ptr_ != nullptr) {
+    min_ptr_->right.reset();
   }
+  min_ptr_ = nullptr;
+  size_ = 0;
+  max_degree_ = 0;
 }

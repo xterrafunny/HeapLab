@@ -98,3 +98,36 @@ TEST(FibHeapBasic, Decrease) {
     }
   }
 }
+
+TEST(FibHeapBasic, Erase) {
+  std::vector<unsigned long long> sorted, check;
+  std::vector<FibHeap<unsigned long long>::Pointer> ptr;
+  std::mt19937_64 gen;
+  unsigned long long input = 0;
+  for (int count = 0; count < 3; ++count) {
+    for (int n = 1; n < 100; ++n) {
+      sorted.resize(n);
+      ptr.resize(n);
+      FibHeap<unsigned long long> heap;
+      for (int i = 0; i < n; ++i) {
+        sorted[i] = gen();
+        ptr[i] = heap.insert(sorted[i]);
+      }
+      for (int i = 0; i * 2 < n; ++i) {
+        int index = gen() % sorted.size();
+        sorted.erase(sorted.begin() + index);
+        heap.erase(ptr[index]);
+        ptr.erase(ptr.begin() + index);
+      }
+      std::sort(sorted.begin(), sorted.end());
+      for (int i = 0; i < sorted.size(); ++i) {
+        check.push_back(heap.extractMin());
+      }
+      EXPECT_EQ(check, sorted);
+      heap.clear();
+      ptr.clear();
+      sorted.clear();
+      check.clear();
+    }
+  }
+}
