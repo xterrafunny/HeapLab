@@ -1,6 +1,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <exception>
 
 template<typename Key>
 class BinaryHeap {
@@ -141,16 +142,25 @@ void BinaryHeap<Key>::siftDown_(Node node) {
 
 template<typename Key>
 Key BinaryHeap<Key>::getMin() {
+  if (size_ == 0) {
+    throw std::out_of_range("Empty heap");
+  }
   return heap_.front()->value;
 }
 
 template<typename Key>
 Key BinaryHeap<Key>::extractMin() {
+  if (size_ == 0) {
+    throw std::out_of_range("Empty heap");
+  }
   return erase_(*((heap_.front())->ptr.lock()));
 }
 
 template<typename Key>
 Key BinaryHeap<Key>::erase(BinaryHeap<Key>::Pointer pointer) {
+  if (pointer.ptr == nullptr || (*pointer.ptr).expired()) {
+    throw std::invalid_argument("Key is already deleted");
+  }
   Node node = *((*pointer.ptr).lock());
   return erase_(node);
 }
@@ -169,6 +179,9 @@ BinaryHeap<Key>::BinaryHeap(Iterator begin, Iterator end) {
 
 template<typename Key>
 void BinaryHeap<Key>::change(BinaryHeap<Key>::Pointer pointer, Key value) {
+  if (pointer.ptr == nullptr || (*pointer.ptr).expired()) {
+    throw std::invalid_argument("Key is already deleted");
+  }
   std::shared_ptr<Node> ptr_to_node = (*pointer.ptr).lock();
   if (ptr_to_node->value == value) {
     return;
