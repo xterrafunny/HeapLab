@@ -1,5 +1,6 @@
 #include <list>
 #include <memory>
+#include <exception>
 
 template<typename Key>
 class BinomialHeap {
@@ -46,6 +47,9 @@ size_t BinomialHeap<Key>::size() {
 
 template<typename Key>
 Key BinomialHeap<Key>::getMin() {
+  if (size_ == 0) {
+    throw std::out_of_range("Empty heap");
+  }
   return (*iterator_to_min_)->key;
 }
 
@@ -133,6 +137,9 @@ void BinomialHeap<Key>::insert(Key key) {
 
 template<typename Key>
 Key BinomialHeap<Key>::extractMin() {
+  if (size_ == 0) {
+    throw std::out_of_range("Empty heap");
+  }
   BinomialHeap<Key> new_heap;
   Key return_value = getMin();
   new_heap.roots_ = (*iterator_to_min_)->children;
